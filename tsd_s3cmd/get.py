@@ -1,7 +1,6 @@
 import typer
 
-from tsd_s3cmd.config import get_s3_config, get_s3cmd_config, get_value
-
+from tsd_s3cmd.config import get_s3cmd_config, get_value
 app = typer.Typer()
 
 @app.command()
@@ -18,4 +17,7 @@ def project():
 
 @app.command()
 def s3cfg(project=get_value("project"), environment=get_value("environment")):
-    typer.echo(get_s3cmd_config(project=project, environment=environment))
+    try:
+        typer.echo(get_s3cmd_config(project=project, environment=environment))
+    except FileNotFoundError:
+        typer.echo(f"No s3cfg set for project '{project}' in environment '{environment}'")

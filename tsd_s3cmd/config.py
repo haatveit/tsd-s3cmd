@@ -7,7 +7,9 @@ import toml
 from tsdapiclient.configurer import read_config, write_config, update_config
 from tsdapiclient.tools import get_config_path
 
-DEFAULT_CONFIG_PATH = pathlib.Path(get_config_path()) / 's3.toml'
+DEFAULT_CONFIG_DIRECTORY = pathlib.Path(get_config_path())
+DEFAULT_CONFIG_PATH = DEFAULT_CONFIG_DIRECTORY / f'{__package__}.toml'
+S3CMD_CONFIG_FILE = str(DEFAULT_CONFIG_DIRECTORY) + "/s3cfg_{project}_{environment}"
 
 class TsdApiHost(Enum):
     prod = "api.tsd.usit.no"
@@ -15,8 +17,8 @@ class TsdApiHost(Enum):
     test = "test.api.tsd.usit.no"
 
 def get_s3cmd_config(project: str, environment: str):
-    s3cmd_config_file = pathlib.Path(get_config_path()) / f"s3cfg_{project}_{environment}"
-    with open(s3cmd_config_file, 'r') as f:
+    cfg = S3CMD_CONFIG_FILE.format(project=project, environment=environment)
+    with open(cfg, 'r') as f:
         s3cfg = f.read()
     return s3cfg
 
@@ -31,10 +33,10 @@ def set_s3cmd_config(project: str, environment: str, access_key: str, secret_key
         secret_key = {secret_key}
         signature_v2 = False
     """
-    s3cmd_config_file = pathlib.Path(get_config_path()) / f"s3cfg_{project}_{environment}"
-    with open(s3cmd_config_file, 'w') as f:
+    cfg = S3CMD_CONFIG_FILE.format(project=project, environment=environment)
+    with open(cfg, 'w') as f:
         f.write(s3cmd_config)
-    return s3cmd_config, s3cmd_config_file
+    return s3cmd_config, cfg
 
 def get_s3_config(config_file: Union[pathlib.Path, str] = DEFAULT_CONFIG_PATH):
     try:
@@ -44,7 +46,7 @@ def get_s3_config(config_file: Union[pathlib.Path, str] = DEFAULT_CONFIG_PATH):
     return config
 
 def get_value(key: str, config_file: Union[pathlib.Path, str] = DEFAULT_CONFIG_PATH) -> Union[str, None]:
-    return get_s3_config().get(key)
+    return get_s3_config(config_file=config_file).get(key)
 
 def set_value(*, config_file: Union[pathlib.Path, str] = DEFAULT_CONFIG_PATH, **kwargs):
     kv: dict = {**kwargs}
