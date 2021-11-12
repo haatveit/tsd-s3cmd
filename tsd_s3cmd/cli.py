@@ -1,7 +1,11 @@
+import sys
+
 from importlib.metadata import version as meta_version
 from importlib.resources import open_text
+from typing import Optional
 
 import typer
+from tsd_s3cmd.config import get_value
 
 import tsd_s3cmd.get
 import tsd_s3cmd.set
@@ -17,8 +21,16 @@ def guide():
     typer.echo(open_text(__package__, "guide.txt").read())
 
 @app.command()
-def register(project: str):
-    typer.echo("Registering client for project {}")
+def register(project: Optional[str] = typer.Argument(get_value("project"))):
+    if not project:
+        sys.exit("ERROR: project not set.")
+    typer.echo(f"Registering client for project {project}")
+    pass
+
+@app.command()
+def login(project: Optional[str] = typer.Argument(get_value("project"))):
+    if not project:
+        sys.exit("ERROR: project not set.")
     pass
 
 @app.command()
